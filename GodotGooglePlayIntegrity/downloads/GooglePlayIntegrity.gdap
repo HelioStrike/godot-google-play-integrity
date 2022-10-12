@@ -1,5 +1,0 @@
-[config]
-
-name="GooglePlayIntegrity"
-binary_type="local"
-binary="GodotGooglePlayIntegrity-debug.aar"

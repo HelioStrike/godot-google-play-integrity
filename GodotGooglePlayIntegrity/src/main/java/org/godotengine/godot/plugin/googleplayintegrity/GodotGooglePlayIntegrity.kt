@@ -13,19 +13,23 @@ import org.godotengine.godot.plugin.SignalInfo
 class GodotGooglePlayIntegrity : GodotPlugin {
     private val integrityManager: IntegrityManager = IntegrityManagerFactory.create(activity)
 
-    constructor(godot: Godot?) : super(godot)
+    constructor(godot: Godot) : super(godot)
 
     override fun getPluginName() = "GodotGooglePlayIntegrity"
 
-    fun requestIntegrityToken(nonce: String) {
+    fun requestIntegrityToken(cloudProjectNumber: String, nonce: String) {
         Log.d(pluginName, "Requesting Play Integrity token. Nonce=$nonce")
 
-        val integrityTokenResponse: Task<IntegrityTokenResponse> = integrityManager
-            .requestIntegrityToken(IntegrityTokenRequest.builder().setNonce(nonce).build())
+        val integrityTokenResponse: Task<IntegrityTokenResponse> =
+            integrityManager.requestIntegrityToken(
+                IntegrityTokenRequest.builder()
+                    .setCloudProjectNumber(cloudProjectNumber.toLong())
+                    .setNonce(nonce).build()
+            )
 
         integrityTokenResponse.addOnCompleteListener { response ->
-            Log.d(pluginName, "Received token:${response.result.token()}")
-            emitSignal("request_completed", response.result.token())
+            Log.d(pluginName, "Received token: ${response.result.token()}")
+            emitSignal("integrity_token_received", response.result.token())
         }
     }
 
@@ -34,6 +38,6 @@ class GodotGooglePlayIntegrity : GodotPlugin {
     }
 
     override fun getPluginSignals(): MutableSet<SignalInfo> {
-        return mutableSetOf<SignalInfo>(SignalInfo("request_completed", String.javaClass))
+        return mutableSetOf<SignalInfo>(SignalInfo("integrity_token_received", String::class.java))
     }
 }
